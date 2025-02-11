@@ -70,7 +70,7 @@ int main() {
       if (cmd == "type") {
         bool flag {false};
 
-        if (commands.contains(cmd))
+        if (commands.contains(args[1]))
           std::cout << args[1] << " is a shell builtin\n";
         else {
           std::vector paths {getPaths()};
