@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cstddef>
 #include <iostream>
 #include <unordered_set>
 #include <vector>
@@ -30,6 +31,20 @@ std::vector<std::string> getPaths() {
   return splitCommand(path);
 }
 
+std::filesystem::path getPathIfExists(const std::string& command) {
+  std::vector paths {getPaths()};
+  for (auto &path : paths) {
+    const std::string full_path { path + '/' + command };
+
+    if (std::filesystem::exists(full_path)) {
+      return full_path;
+    }
+
+  }
+  return {};
+}
+
+
 
 int main() {
   // Flush after every std::cout / std:cerr
@@ -48,11 +63,9 @@ int main() {
     if (args.empty())
       continue;
 
-    std::string_view cmd { args[0]};
+    const std::string cmd { args[0] };
 
-    if (!commands.contains(cmd)) {
-      std::cout << cmd << ": command not found\n";
-    } else {
+    if (commands.contains(cmd)) {
 
       if (cmd == "exit" && args[1] == "0")
         return 0;
@@ -73,22 +86,19 @@ int main() {
         if (commands.contains(args[1]))
           std::cout << args[1] << " is a shell builtin\n";
         else {
-          std::vector paths {getPaths()};
-          
-          for (auto &path : paths) {
-            const std::string full_path { path + '/' + args[1] };
-
-            if (std::filesystem::exists(full_path)) {
-              std::cout << args[1] << " is " << full_path << '\n';
-              flag = true;
-              break;
-            }
-
-          }
-        if (!flag)
-          std::cout << args[1] << ": not found\n";
+          if(std::filesystem::path path {getPathIfExists(args[1])}; path != "")
+            std::cout << args[1] << " is " << path << '\n';
+          else
+            std::cout << args[1] << ": not found\n";
         }
       }
+    } else {
+        if(getPathIfExists(cmd) != "") {
+          std::string full_cmd {cmd};
+          std::system(input.c_str());
+        }
+        else
+          std::cout << cmd << ": command not found\n";
     }
   }
   return 0;
