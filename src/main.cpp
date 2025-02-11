@@ -36,7 +36,7 @@ int main() {
   std::cout << std::unitbuf;
   std::cerr << std::unitbuf;
 
-  std::unordered_set<std::string> commands {"exit", "echo", "type"};
+  std::unordered_set<std::string_view> commands {"exit", "echo", "type"};
   while(true) {	  
     std::cout << "$ ";
 
