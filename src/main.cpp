@@ -49,7 +49,7 @@ int main() {
   std::cout << std::unitbuf;
   std::cerr << std::unitbuf;
 
-  std::unordered_set<std::string_view> commands {"exit", "echo", "type"};
+  std::unordered_set<std::string_view> commands {"exit", "echo", "type", "pwd"};
   while(true) {	  
     std::cout << "$ ";
 
@@ -76,6 +76,10 @@ int main() {
         }
         str.pop_back();
         std::cout << str << '\n';
+      }
+
+      if (cmd == "pwd") {
+        std::cout << static_cast<std::string> (std::filesystem::current_path()) << '\n';
       }
 
       if (cmd == "type") {
