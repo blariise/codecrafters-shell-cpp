@@ -44,8 +44,6 @@ std::filesystem::path getPathIfExists(const std::string& command) {
   return {};
 }
 
-
-
 int main() {
   // Flush after every std::cout / std:cerr
   std::cout << std::unitbuf;
@@ -87,7 +85,7 @@ int main() {
           std::cout << args[1] << " is a shell builtin\n";
         else {
           if(std::filesystem::path path {getPathIfExists(args[1])}; path != "")
-            std::cout << args[1] << " is " << path << '\n';
+            std::cout << args[1] << " is " << static_cast<std::string>(path) << '\n';
           else
             std::cout << args[1] << ": not found\n";
         }
