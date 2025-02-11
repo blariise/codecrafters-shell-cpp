@@ -49,7 +49,8 @@ int main() {
   std::cout << std::unitbuf;
   std::cerr << std::unitbuf;
 
-  std::unordered_set<std::string_view> commands {"exit", "echo", "type", "pwd"};
+  std::unordered_set<std::string_view> commands {"exit", "echo", "type", "pwd", "cd"};
+  std::filesystem::path current_path { std::filesystem::current_path() };
   while(true) {	  
     std::cout << "$ ";
 
@@ -79,7 +80,16 @@ int main() {
       }
 
       if (cmd == "pwd") {
-        std::cout << static_cast<std::string> (std::filesystem::current_path()) << '\n';
+        std::cout << static_cast<std::string>(current_path) << '\n';
+      }
+
+      if (cmd == "cd") {
+        std::string path { args[1] };
+        if (std::filesystem::exists(path)) {
+          current_path = path;
+        } else {
+          std::cout << "cd: " << path << ": No such file or directory\n"; 
+        }
       }
 
       if (cmd == "type") {
