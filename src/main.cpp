@@ -130,7 +130,6 @@ int main() {
             if (std::filesystem::exists(path)) {
               current_path = path;
             } else {
-              std::cout << '\n';
               std::cout << "cd: " << path << ": No such file or directory\n"; 
             }
         }
