@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <iostream>
+#include <iterator>
 #include <unordered_set>
 #include <vector>
 #include <sstream>
@@ -44,6 +45,33 @@ std::filesystem::path getPathIfExists(const std::string& command) {
   return {};
 }
 
+std::vector<std::string> getPathInVector(const std::string& path) {
+  std::string result { path };
+  std::replace(result.begin(), result.end(), '/', ' ');
+  return splitCommand(result);
+}
+
+std::filesystem::path constructPath(std::filesystem::path& path, const std::string& dir) {
+  if (std::filesystem::exists(static_cast<std::string>(path) + '/' + dir)) {
+    return static_cast<std::string>(path) + '/' + dir;
+  }
+  return {};
+}
+
+std::filesystem::path constructPathFromVector(const std::vector<std::string>& path) {
+  std::string real_path {};
+  for (const auto& x : path) {
+    real_path += '/' + x;
+  }
+  return real_path;
+}
+
+void movePathUp(std::filesystem::path& current_path) {
+  std::vector splitted { getPathInVector(current_path) };
+  splitted.pop_back();
+  current_path = constructPathFromVector(splitted);
+}
+
 int main() {
   // Flush after every std::cout / std:cerr
   std::cout << std::unitbuf;
@@ -85,10 +113,26 @@ int main() {
 
       if (cmd == "cd") {
         std::string path { args[1] };
-        if (std::filesystem::exists(path)) {
-          current_path = path;
+        std::vector<std::string> rel_path { getPathInVector(path) };
+
+
+        if (rel_path[0] == "." || rel_path[0] == "..") {
+          for (const auto& p : rel_path) {
+            if (p == ".")
+              continue;
+            else if (p == "..") {
+              movePathUp(current_path);
+            } else {
+              current_path = constructPath(current_path, p);
+            }
+          }
         } else {
-          std::cout << "cd: " << path << ": No such file or directory\n"; 
+            if (std::filesystem::exists(path)) {
+              current_path = path;
+            } else {
+              std::cout << '\n';
+              std::cout << "cd: " << path << ": No such file or directory\n"; 
+            }
         }
       }
 
