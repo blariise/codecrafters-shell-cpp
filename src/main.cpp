@@ -115,6 +115,11 @@ int main() {
         std::string path { args[1] };
         std::vector<std::string> rel_path { getPathInVector(path) };
 
+        if (rel_path[0] == "~") {
+          const char* env_p { std::getenv("HOME") };
+          current_path = env_p;
+          continue;
+        }
 
         if (rel_path[0] == "." || rel_path[0] == "..") {
           for (const auto& p : rel_path) {
