@@ -130,7 +130,7 @@ int main() {
       if (cmd == "echo") {
         std::vector xd {splitInputForEcho( input)};
         for (auto x : xd) {
-          std::cout << x;
+          std::cout << x << ' ';
         }
         std::cout << '\n';
       }
