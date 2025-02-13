@@ -106,7 +106,6 @@ int main() {
     "type",
     "pwd",
     "cd",
-    "cat"
   };
   std::filesystem::path current_path { std::filesystem::current_path() };
   while(true) {	  
