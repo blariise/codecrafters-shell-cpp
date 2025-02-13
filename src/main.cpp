@@ -77,7 +77,14 @@ int main() {
   std::cout << std::unitbuf;
   std::cerr << std::unitbuf;
 
-  std::unordered_set<std::string_view> commands {"exit", "echo", "type", "pwd", "cd"};
+  std::unordered_set<std::string_view> commands {
+    "exit",
+    "echo",
+    "type",
+    "pwd",
+    "cd",
+    "cat"
+  };
   std::filesystem::path current_path { std::filesystem::current_path() };
   while(true) {	  
     std::cout << "$ ";
@@ -99,11 +106,20 @@ int main() {
 
       if (cmd == "echo") {
         std::string str {};
-        for (std::size_t i {1}; i < std::size(args); ++i) {
-          str.append(args[i]);
-          str.append(" ");
+        if (input.at(5) == '\'' && input.back() == '\'') {
+          std::string temp {input};
+          temp.erase(0, 6);
+          temp.pop_back();
+          str.append(temp);
+
+        } else {
+            for (std::size_t i {1}; i < std::size(args); ++i) {
+              str.append(args[i]);
+              str.append(" ");
+            }
+            str.pop_back();
         }
-        str.pop_back();
+        
         std::cout << str << '\n';
       }
 
@@ -152,6 +168,11 @@ int main() {
             std::cout << args[1] << ": not found\n";
         }
       }
+
+      if (cmd == "cat") {
+        
+      }
+
     } else {
         if(getPathIfExists(cmd) != "") {
           std::string full_cmd {cmd};
