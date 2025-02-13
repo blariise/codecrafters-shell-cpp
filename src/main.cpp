@@ -21,6 +21,29 @@ std::vector<std::string> splitCommand(const std::string& command) {
   return tokens;
 }
 
+std::vector<std::string>splitInputForEcho(std::string& input) {
+  std::string temp { input };
+  temp.erase(0, 5);
+  std::vector<std::size_t> quotesIdx {};
+  for (auto i {std::ssize(temp) - 1}; i >= 0; --i) {
+    if (temp[i] == '\'')
+      quotesIdx.push_back(i);
+  }
+
+  std::size_t quotesNum { std::size(quotesIdx) };
+  if (quotesNum < 2) {
+    return splitCommand(temp);
+  }
+
+  if (std::size(quotesIdx) % 2 != 0) {
+    quotesIdx.erase(quotesIdx.begin());
+  }
+  for (const auto& idx : quotesIdx)
+      temp.erase(idx, 1);
+  
+  return {temp};
+}
+
 std::vector<std::string> getPaths() {
   const char* env_p { std::getenv("PATH") };
   
@@ -105,22 +128,11 @@ int main() {
         return 0;
 
       if (cmd == "echo") {
-        std::string str {};
-        if (input.at(5) == '\'' && input.back() == '\'') {
-          std::string temp {input};
-          temp.erase(0, 6);
-          temp.pop_back();
-          str.append(temp);
-
-        } else {
-            for (std::size_t i {1}; i < std::size(args); ++i) {
-              str.append(args[i]);
-              str.append(" ");
-            }
-            str.pop_back();
+        std::vector xd {splitInputForEcho( input)};
+        for (auto x : xd) {
+          std::cout << x;
         }
-        
-        std::cout << str << '\n';
+        std::cout << '\n';
       }
 
       if (cmd == "pwd") {
@@ -167,10 +179,6 @@ int main() {
           else
             std::cout << args[1] << ": not found\n";
         }
-      }
-
-      if (cmd == "cat") {
-        
       }
 
     } else {
