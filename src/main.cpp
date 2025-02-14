@@ -21,13 +21,17 @@ std::vector<std::string> splitCommand(const std::string& command) {
   return tokens;
 }
 
-std::vector<std::string>splitInputForEcho(std::string& input) {
+std::vector<std::string>splitInputForEcho(const std::string& input) {
   std::string temp { input };
   temp.erase(0, 5);
   std::vector<std::size_t> quotesIdx {};
 
+
+
   for (std::size_t i{0}; i < std::size(temp); ++i) {
     if (temp[i] == '\'')
+      quotesIdx.push_back(i);
+    if (temp[i] == '\"')
       quotesIdx.push_back(i);
   }
 
@@ -140,7 +144,7 @@ int main() {
         return 0;
 
       if (cmd == "echo") {
-        std::vector xd {splitInputForEcho( input)};
+        std::vector xd {splitInputForEcho(input)};
         for (auto x : xd) {
           std::cout << x << ' ';
         }
