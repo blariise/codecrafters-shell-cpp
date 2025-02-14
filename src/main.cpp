@@ -25,7 +25,8 @@ std::vector<std::string>splitInputForEcho(std::string& input) {
   std::string temp { input };
   temp.erase(0, 5);
   std::vector<std::size_t> quotesIdx {};
-  for (auto i {std::ssize(temp) - 1}; i >= 0; --i) {
+
+  for (std::size_t i{0}; i < std::size(temp); ++i) {
     if (temp[i] == '\'')
       quotesIdx.push_back(i);
   }
@@ -36,12 +37,24 @@ std::vector<std::string>splitInputForEcho(std::string& input) {
   }
 
   if (std::size(quotesIdx) % 2 != 0) {
-    quotesIdx.erase(quotesIdx.begin());
+    quotesIdx.erase(quotesIdx.end());
   }
-  for (const auto& idx : quotesIdx)
-      temp.erase(idx, 1);
-  
-  return {temp};
+
+  std::vector<std::string> result {};
+  std::string word {};
+  for (std::size_t i {0}; i < std::size(quotesIdx); i += 2) {
+    word = temp.substr(quotesIdx[i] + 1, quotesIdx[i + 1] - quotesIdx[i] - 1);
+    result.push_back(word);
+  }
+
+  if (std::size(temp) - 1 > quotesIdx.back()) {
+    word = temp.substr(quotesIdx.back() + 1, std::size(temp) - 1);
+    std::vector noquotestext {splitCommand(word)};
+    result.reserve(std::size(result) + std::size(noquotestext));
+    result.insert(result.end(), noquotestext.begin(), noquotestext.end());
+  }
+
+  return result;
 }
 
 std::vector<std::string> getPaths() {
