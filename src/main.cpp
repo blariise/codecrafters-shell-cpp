@@ -34,31 +34,41 @@ std::vector<std::string>splitInputForEcho(const std::string& input) {
   std::string temp { input };
   temp.erase(0, 5); //remove echo command from input
 
-  std::vector<std::size_t> singleQuotesidx { getQuotesIdx(temp, '\'') };
+  std::vector<std::size_t> singleQuotesIdx { getQuotesIdx(temp, '\'') };
   std::vector<std::size_t> doubleQuotesIdx { getQuotesIdx(temp, '\"') };
+  std::vector<std::size_t> quotesIdx {};
 
-  for (auto x : singleQuotesidx)
-    std::cout << x << '\n';
 
-  std::size_t quotesNum { std::size(singleQuotesidx) };
+  for (auto x : temp) {
+    if (x == '\'') {
+      quotesIdx = singleQuotesIdx;
+      break;
+    }
+    if (x == '\"') {
+      quotesIdx = doubleQuotesIdx;
+      break;
+    }
+  }
+
+  std::size_t quotesNum { std::size(quotesIdx) };
   if (quotesNum < 2)
     return splitCommand(temp);
   
-  if (std::size(singleQuotesidx) % 2 != 0)
-    singleQuotesidx.erase(singleQuotesidx.end());
+  if (std::size(singleQuotesIdx) % 2 != 0)
+    quotesIdx.erase(quotesIdx.end());
 
   std::vector<std::string> result {};
   std::string word {};
-  for (std::size_t i {0}; i < std::size(singleQuotesidx); i += 2) {
-    word = temp.substr(singleQuotesidx[i] + 1, singleQuotesidx[i + 1] - singleQuotesidx[i] - 1);
+  for (std::size_t i {0}; i < std::size(quotesIdx); i += 2) {
+    word = temp.substr(quotesIdx[i] + 1, quotesIdx[i + 1] - quotesIdx[i] - 1);
     result.push_back(word);
-    if (singleQuotesidx[i+1] + 1 <= std::size(temp))
-      if (temp[singleQuotesidx[i+1] + 1] == ' ')
+    if (quotesIdx[i+1] + 1 <= std::size(temp))
+      if (temp[quotesIdx[i+1] + 1] == ' ')
         result.push_back(" ");
   }
 
-  if (std::size(temp) - 1 > singleQuotesidx.back()) {
-    word = temp.substr(singleQuotesidx.back() + 1, std::size(temp) - 1);
+  if (std::size(temp) - 1 > quotesIdx.back()) {
+    word = temp.substr(quotesIdx.back() + 1, std::size(temp) - 1);
     std::vector noquotestext {splitCommand(word)};
     result.reserve(std::size(result) + std::size(noquotestext));
     result.insert(result.end(), noquotestext.begin(), noquotestext.end());
