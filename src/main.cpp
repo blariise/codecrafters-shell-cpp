@@ -51,8 +51,18 @@ std::vector<std::string>splitInputForEcho(const std::string& input) {
   }
 
   std::size_t quotesNum { std::size(quotesIdx) };
-  if (quotesNum < 2)
-    return splitCommand(temp);
+  if (quotesNum < 2) {
+    std::vector words { splitCommand(temp) };
+    std::vector<std::string> result {};
+    if (!words.empty()) {
+      for (std::size_t i {0}; i < std::size(words); ++i) {
+        result.push_back(words[i]);
+        result.push_back(" ");
+      }
+      result.pop_back();
+    }
+    return result;
+  }
   
   if (std::size(quotesIdx) % 2 != 0)
     quotesIdx.erase(quotesIdx.end());
