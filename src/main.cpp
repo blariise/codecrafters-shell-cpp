@@ -21,38 +21,44 @@ std::vector<std::string> splitCommand(const std::string& command) {
   return tokens;
 }
 
+std::vector<std::size_t>getQuotesIdx(std::string_view input, const char& c) {
+  std::vector<std::size_t> quotesIdx {};
+  for (std::size_t i{0}; i < std::size(input); ++i) {
+    if (input[i] == c)
+      quotesIdx.push_back(i);
+  }
+  return {quotesIdx};
+}
+
 std::vector<std::string>splitInputForEcho(const std::string& input) {
   std::string temp { input };
-  temp.erase(0, 5);
-  std::vector<std::size_t> quotesIdx {};
+  temp.erase(0, 5); //remove echo command from input
 
+  std::vector<std::size_t> singleQuotesidx { getQuotesIdx(temp, '\'') };
+  std::vector<std::size_t> doubleQuotesIdx { getQuotesIdx(temp, '\"') };
 
+  for (auto x : singleQuotesidx)
+    std::cout << x << '\n';
 
-  for (std::size_t i{0}; i < std::size(temp); ++i) {
-    if (temp[i] == '\'')
-      quotesIdx.push_back(i);
-    if (temp[i] == '\"')
-      quotesIdx.push_back(i);
-  }
-
-  std::size_t quotesNum { std::size(quotesIdx) };
-  if (quotesNum < 2) {
+  std::size_t quotesNum { std::size(singleQuotesidx) };
+  if (quotesNum < 2)
     return splitCommand(temp);
-  }
-
-  if (std::size(quotesIdx) % 2 != 0) {
-    quotesIdx.erase(quotesIdx.end());
-  }
+  
+  if (std::size(singleQuotesidx) % 2 != 0)
+    singleQuotesidx.erase(singleQuotesidx.end());
 
   std::vector<std::string> result {};
   std::string word {};
-  for (std::size_t i {0}; i < std::size(quotesIdx); i += 2) {
-    word = temp.substr(quotesIdx[i] + 1, quotesIdx[i + 1] - quotesIdx[i] - 1);
+  for (std::size_t i {0}; i < std::size(singleQuotesidx); i += 2) {
+    word = temp.substr(singleQuotesidx[i] + 1, singleQuotesidx[i + 1] - singleQuotesidx[i] - 1);
     result.push_back(word);
+    if (singleQuotesidx[i+1] + 1 <= std::size(temp))
+      if (temp[singleQuotesidx[i+1] + 1] == ' ')
+        result.push_back(" ");
   }
 
-  if (std::size(temp) - 1 > quotesIdx.back()) {
-    word = temp.substr(quotesIdx.back() + 1, std::size(temp) - 1);
+  if (std::size(temp) - 1 > singleQuotesidx.back()) {
+    word = temp.substr(singleQuotesidx.back() + 1, std::size(temp) - 1);
     std::vector noquotestext {splitCommand(word)};
     result.reserve(std::size(result) + std::size(noquotestext));
     result.insert(result.end(), noquotestext.begin(), noquotestext.end());
@@ -60,6 +66,10 @@ std::vector<std::string>splitInputForEcho(const std::string& input) {
 
   return result;
 }
+
+// std::string echoOutput(const std::vector<std::vector<std::size_t>, std::vector<std::size_t>> quotes) {
+//   return "hello";
+// }
 
 std::vector<std::string> getPaths() {
   const char* env_p { std::getenv("PATH") };
@@ -146,7 +156,7 @@ int main() {
       if (cmd == "echo") {
         std::vector xd {splitInputForEcho(input)};
         for (auto x : xd) {
-          std::cout << x << ' ';
+          std::cout << x;
         }
         std::cout << '\n';
       }
