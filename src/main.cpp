@@ -69,7 +69,7 @@ std::vector<std::string>splitInputForEcho(const std::string& input) {
 
 // std::string echoOutput(const std::vector<std::vector<std::size_t>, std::vector<std::size_t>> quotes) {
 //   return "hello";
-// }
+//help }  
 
 std::vector<std::string> getPaths() {
   const char* env_p { std::getenv("PATH") };
