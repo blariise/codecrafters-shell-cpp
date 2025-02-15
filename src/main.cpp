@@ -54,7 +54,7 @@ std::vector<std::string>splitInputForEcho(const std::string& input) {
   if (quotesNum < 2)
     return splitCommand(temp);
   
-  if (std::size(singleQuotesIdx) % 2 != 0)
+  if (std::size(quotesIdx) % 2 != 0)
     quotesIdx.erase(quotesIdx.end());
 
   std::vector<std::string> result {};
