@@ -22,6 +22,15 @@ std::vector<std::string> splitCommand(const std::string& command) {
   return tokens;
 }
 
+std::vector<std::size_t>getQuotesIdx(std::string_view input, const char& c) {
+  std::vector<std::size_t> quotesIdx {};
+  for (std::size_t i{0}; i < std::size(input); ++i) {
+    if (input[i] == c)
+      quotesIdx.push_back(i);
+  }
+  return {quotesIdx};
+}
+
 std::vector<std::string> getEchoOutput(const std::string& input) {
   std::vector<std::string> args;
   std::string current_token;
@@ -102,6 +111,10 @@ std::vector<std::string> getEchoOutput(const std::string& input) {
   }
   return args;
 }
+
+// std::string echoOutput(const std::vector<std::vector<std::size_t>, std::vector<std::size_t>> quotes) {
+//x   return "hello";
+//help }  
 
 std::vector<std::string> getPaths() {
   const char* env_p { std::getenv("PATH") };
