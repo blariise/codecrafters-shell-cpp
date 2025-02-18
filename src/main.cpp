@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <cstdlib>
 #include <string_view>
+#include <sstream>
 
 std::vector<std::string> splitCommand(const std::string& command) {
   std::vector<std::string> tokens {};
@@ -21,44 +22,85 @@ std::vector<std::string> splitCommand(const std::string& command) {
   return tokens;
 }
 
-std::vector<std::string>splitInputForEcho(const std::string& input) {
-  std::string temp { input };
-  temp.erase(0, 5);
-  std::vector<std::size_t> quotesIdx {};
+std::vector<std::string> getEchoOutput(const std::string& input) {
+  std::vector<std::string> args;
+  std::string current_token;
+  enum State {
+    DEFAULT,
+    SINGLE_QUOTE,
+    DOUBLE_QUOTE
+    } state = DEFAULT;
 
-
-
-  for (std::size_t i{0}; i < std::size(temp); ++i) {
-    if (temp[i] == '\'')
-      quotesIdx.push_back(i);
-    if (temp[i] == '\"')
-      quotesIdx.push_back(i);
+  bool escaped { false };
+  std::size_t i { 0 };
+  while (i < std::size(input)) {
+    char c { input[i] };
+    if (escaped) {
+      current_token += c;
+      escaped = false;
+      i++;
+      continue;
+    }
+    switch (state) {
+      case DEFAULT:
+        if (c == '\\') {
+          escaped = true;
+          i++;
+        } else if (isspace(c)) {
+          if (!current_token.empty()) {
+            args.push_back(current_token);
+            current_token.clear();
+          }
+          i++;
+        } else if (c == '\'') {
+          state = SINGLE_QUOTE;
+          i++;
+        } else if (c == '"') {
+          state = DOUBLE_QUOTE;
+          i++;
+        } else {
+          current_token += c;
+          i++;
+        }
+        break;
+      case SINGLE_QUOTE:
+        if (c == '\'') {
+          state = DEFAULT;
+          i++;
+        } else {
+          current_token += c;
+          i++;
+        }
+        break;
+      case DOUBLE_QUOTE:
+        if (c == '\\') {
+          if (i + 1 < std::size(input)) {
+            char next_c { input[i + 1] };
+            if (next_c == '\\' || next_c == '$' || next_c == '"' || next_c == '\n') {
+              current_token += next_c;
+              i += 2;
+            } else {
+              current_token += '\\';
+              i++;
+            }
+          } else {
+            current_token += '\\';
+            i++;
+          }
+        } else if (c == '"') {
+          state = DEFAULT;
+          i++;
+        } else {
+          current_token += c;
+          i++;
+        }
+        break;
+    }
   }
-
-  std::size_t quotesNum { std::size(quotesIdx) };
-  if (quotesNum < 2) {
-    return splitCommand(temp);
+  if (!current_token.empty()) {
+    args.push_back(current_token);
   }
-
-  if (std::size(quotesIdx) % 2 != 0) {
-    quotesIdx.erase(quotesIdx.end());
-  }
-
-  std::vector<std::string> result {};
-  std::string word {};
-  for (std::size_t i {0}; i < std::size(quotesIdx); i += 2) {
-    word = temp.substr(quotesIdx[i] + 1, quotesIdx[i + 1] - quotesIdx[i] - 1);
-    result.push_back(word);
-  }
-
-  if (std::size(temp) - 1 > quotesIdx.back()) {
-    word = temp.substr(quotesIdx.back() + 1, std::size(temp) - 1);
-    std::vector noquotestext {splitCommand(word)};
-    result.reserve(std::size(result) + std::size(noquotestext));
-    result.insert(result.end(), noquotestext.begin(), noquotestext.end());
-  }
-
-  return result;
+  return args;
 }
 
 std::vector<std::string> getPaths() {
@@ -113,7 +155,6 @@ void movePathUp(std::filesystem::path& current_path) {
 }
 
 int main() {
-  // Flush after every std::cout / std:cerr
   std::cout << std::unitbuf;
   std::cerr << std::unitbuf;
 
@@ -144,9 +185,13 @@ int main() {
         return 0;
 
       if (cmd == "echo") {
-        std::vector xd {splitInputForEcho(input)};
-        for (auto x : xd) {
-          std::cout << x << ' ';
+        input = input.substr(5);
+        std::vector<std::string> args = getEchoOutput(input);
+        if (!args.empty()) {
+          std::cout << args[0];
+          for (std::size_t i { 1 }; i < std::size(args); ++i) {
+            std::cout << " " << args[i];
+          }
         }
         std::cout << '\n';
       }
