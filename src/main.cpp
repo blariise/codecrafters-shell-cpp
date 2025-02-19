@@ -2,6 +2,7 @@
 #include <cstddef>
 #include <iostream>
 #include <iterator>
+#include <system_error>
 #include <unordered_set>
 #include <vector>
 #include <sstream>
@@ -9,7 +10,6 @@
 #include <filesystem>
 #include <cstdlib>
 #include <string_view>
-#include <sstream>
 
 std::vector<std::string> splitCommand(const std::string& command) {
   std::vector<std::string> tokens {};
@@ -185,6 +185,10 @@ int main() {
         return 0;
 
       if (cmd == "echo") {
+        if (std::size(args) == 1) {
+          std::cout << '\n';
+          continue;
+        }
         input = input.substr(5);
         std::vector<std::string> args = getEchoOutput(input);
         if (!args.empty()) {
@@ -243,7 +247,23 @@ int main() {
       }
 
     } else {
-        if(getPathIfExists(cmd) != "") {
+        std::vector xd { getEchoOutput(input) };
+        if (!xd.empty()) {
+          if (std::size(xd) == 1) {
+            if (getPathIfExists(xd[0]) != "") {
+              std::system(xd[0].c_str());
+              continue;
+            }
+          } else {
+            std::string res { xd[0] } ;
+            for (std::size_t i { 1 }; i < std::size(xd); ++i) {
+              res +=  " " + xd[i];
+            }
+            std::system(res.c_str());
+          }
+        }
+        
+        if (getPathIfExists(cmd) != "") {
           std::string full_cmd {cmd};
           std::system(input.c_str());
         }
