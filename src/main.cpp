@@ -2,7 +2,6 @@
 #include <cstddef>
 #include <iostream>
 #include <iterator>
-#include <system_error>
 #include <unordered_set>
 #include <vector>
 #include <sstream>
@@ -248,32 +247,17 @@ int main() {
 
     } else {
         std::vector xd { getEchoOutput(input) };
-        if (!xd.empty()) {
-          if (std::size(xd) == 1) {
-            if (getPathIfExists(xd[0]) != "") {
-              std::system(xd[0].c_str());
-              continue;
-            }
-          } else {
-              char quote {};
-              if (xd[0][0] == '\'')
-                quote = '\'';
-              if (xd[0][0] == '\"')
-                quote = '\"';
-              std::string res { quote };
-              res += xd[0] + quote;
-              for (std::size_t i { 1 }; i < std::size(xd); ++i) {
-                res +=  " " + xd[i];
-              }
-              std::system(res.c_str());
-          }
-        } else {
-            if (getPathIfExists(cmd) != "") {
-              std::string full_cmd {cmd};
-              std::system(input.c_str());
-            } else
-              std::cout << xd[0] << ": command not found\n";
-        }
+        int result { std::system(input.c_str()) };
+        if (result != 0) {
+          std::cout << ":command not found\n";
+        } if ( result == 0)
+          continue;
+
+        if (getPathIfExists(cmd) != "") {
+          std::string full_cmd {cmd};
+          std::system(input.c_str());
+        } else
+            std::cout << cmd << ": command not found\n";
     }
   }
   return 0;
