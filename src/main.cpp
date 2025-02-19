@@ -155,8 +155,82 @@ void movePathUp(std::filesystem::path& current_path) {
   current_path = constructPathFromVector(splitted);
 }
 
-bool commandExists(const std::string& command) {
-    return (system(("command -v " + command + " >/dev/null 2>&1").c_str()) == 0);
+std::vector<std::string> split(const std::string& s, char delimiter) {
+  std::vector<std::string> tokens {};
+  std::string token {};
+  std::istringstream tokenStream(s);
+  while (std::getline(tokenStream, token, delimiter)) {
+    if (!token.empty())
+      tokens.push_back(token);
+  }
+  return tokens;
+}
+
+bool command_exists(std::string& executable) {
+  if ((executable.front() == '"' && executable.back() == '"') ||
+    (executable.front() == '\'' && executable.back() == '\'')) {
+    executable = executable.substr(1, executable.size() - 2);
+  }
+
+  if (executable.find('/') != std::string::npos)
+    return access(executable.c_str(), X_OK) == 0;
+
+  const char* path = std::getenv("PATH");
+  if (!path)
+    return false;
+
+  std::vector<std::string> dirs { split(path, ':') };
+  for (const auto& dir : dirs) {
+    std::string full_path { dir + "/" + executable };
+    if (access(full_path.c_str(), X_OK) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+void execute_command(const std::string& input) {
+  std::string executable {};
+  std::string arguments {};
+  size_t executable_end {0};
+  bool in_quote { false };
+  char quote_char {'\0'};
+    
+  for (std::size_t i { 0 }; i < std::size(input); ++i) {
+    if (!in_quote && (input[i] == '\'' || input[i] == '"')) {
+      in_quote = true;
+      quote_char = input[i];
+      executable_end = i + 1;
+      while (executable_end < std::size(input) && input[executable_end] != quote_char) {
+        ++executable_end;
+      }
+      if (executable_end < std::size(input)) {
+        ++executable_end;
+        break;
+      }
+    } else if (!in_quote && input[i] == ' ') {
+      executable_end = i;
+      break;
+    }
+  }
+
+  executable = input.substr(0, executable_end);
+  if (executable_end < input.size()) {
+    arguments = input.substr(executable_end);
+  }
+
+  std::string exe_to_check { executable };
+  if (!command_exists(exe_to_check)) {
+    std::cerr << "Command not found: " << exe_to_check << '\n';
+    return;
+  }
+
+  if (executable.find(' ') != std::string::npos &&
+    (executable.front() != '"' && executable.front() != '\'')) {
+        executable = "\"" + executable + "\"";
+  }
+
+  std::system((executable + arguments).c_str());
 }
 
 int main() {
@@ -252,10 +326,7 @@ int main() {
       }
 
     } else {
-      if (commandExists(args[0]))
-        std::system(input.c_str());
-      else
-        std::cout << args[0] << ": command not found\n";
+      execute_command(input);
     }
   }
   return 0;
