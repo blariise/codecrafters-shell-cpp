@@ -326,7 +326,17 @@ int main() {
       }
 
     } else {
-      execute_command(input);
+      std::string temp { input };
+      for (auto x : temp) {
+        if (x == '"' || x == '\'') {
+          execute_command(input);
+          continue;
+        }
+      }
+      if (getPathIfExists(args[0]) != "")
+        system(input.c_str());
+      else
+        std::cout << args[0] << ": command not found\n";
     }
   }
   return 0;
