@@ -221,7 +221,7 @@ void execute_command(const std::string& input) {
 
   std::string exe_to_check { executable };
   if (!command_exists(exe_to_check)) {
-    std::cerr << "Command not found: " << exe_to_check << '\n';
+    std::cout << exe_to_check << ": command not found\n";
     return;
   }
 
@@ -327,16 +327,18 @@ int main() {
 
     } else {
       std::string temp { input };
-      for (auto x : temp) {
-        if (x == '"' || x == '\'') {
-          execute_command(input);
-          continue;
-        }
-      }
-      if (getPathIfExists(args[0]) != "")
+      
+
+      if (getPathIfExists(args[0]) != "") {
         system(input.c_str());
-      else
+        continue;
+      }
+      if (args[0][0] == '\'' || args[0][0] == '"') {
+        execute_command(input);
+        continue;
+      } else {
         std::cout << args[0] << ": command not found\n";
+      }      
     }
   }
   return 0;
