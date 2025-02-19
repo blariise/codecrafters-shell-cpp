@@ -9,6 +9,8 @@
 #include <filesystem>
 #include <cstdlib>
 #include <string_view>
+#include <sys/wait.h>
+#include <unistd.h>
 
 std::vector<std::string> splitCommand(const std::string& command) {
   std::vector<std::string> tokens {};
@@ -153,6 +155,10 @@ void movePathUp(std::filesystem::path& current_path) {
   current_path = constructPathFromVector(splitted);
 }
 
+bool commandExists(const std::string& command) {
+    return (system(("command -v " + command + " >/dev/null 2>&1").c_str()) == 0);
+}
+
 int main() {
   std::cout << std::unitbuf;
   std::cerr << std::unitbuf;
@@ -246,18 +252,10 @@ int main() {
       }
 
     } else {
-        std::vector xd { getEchoOutput(input) };
-        int result { std::system(input.c_str()) };
-        if (result != 0) {
-          std::cout << ":command not found\n";
-        } if ( result == 0)
-          continue;
-
-        if (getPathIfExists(cmd) != "") {
-          std::string full_cmd {cmd};
-          std::system(input.c_str());
-        } else
-            std::cout << cmd << ": command not found\n";
+      if (commandExists(args[0]))
+        std::system(input.c_str());
+      else
+        std::cout << args[0] << ": command not found\n";
     }
   }
   return 0;
