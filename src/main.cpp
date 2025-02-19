@@ -255,20 +255,21 @@ int main() {
               continue;
             }
           } else {
-            std::string res { xd[0] } ;
+            std::string res { "'" };
+            res += xd[0] + "'";
             for (std::size_t i { 1 }; i < std::size(xd); ++i) {
               res +=  " " + xd[i];
             }
             std::system(res.c_str());
           }
         }
-        
+
         if (getPathIfExists(cmd) != "") {
           std::string full_cmd {cmd};
           std::system(input.c_str());
         }
         else
-          std::cout << cmd << ": command not found\n";
+          std::cout << xd[0] << ": command not found\n";
     }
   }
   return 0;
