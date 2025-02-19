@@ -255,8 +255,13 @@ int main() {
               continue;
             }
           } else {
-              std::string res { "'" };
-              res += xd[0] + "'";
+              char quote {};
+              if (xd[0][0] == '\'')
+                quote = '\'';
+              if (xd[0][0] == '\"')
+                quote = '\"';
+              std::string res { quote };
+              res += xd[0] + quote;
               for (std::size_t i { 1 }; i < std::size(xd); ++i) {
                 res +=  " " + xd[i];
               }
